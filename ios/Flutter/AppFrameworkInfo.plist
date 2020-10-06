@@ -3,7 +3,11 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleDevelopmentRegion</key>
+<<<<<<< HEAD
   <string>en</string>
+=======
+  <string>$(DEVELOPMENT_LANGUAGE)</string>
+>>>>>>> 4966e8f32fe15aac8022dad7bb5695d1e3d54d79
   <key>CFBundleExecutable</key>
   <string>App</string>
   <key>CFBundleIdentifier</key>
@@ -20,11 +24,16 @@
   <string>????</string>
   <key>CFBundleVersion</key>
   <string>1.0</string>
+<<<<<<< HEAD
   <key>UIRequiredDeviceCapabilities</key>
   <array>
     <string>arm64</string>
   </array>
   <key>MinimumOSVersion</key>
   <string>8.0</string>
+=======
+  <key>MinimumOSVersion</key>
+  <string>9.0</string>
+>>>>>>> 4966e8f32fe15aac8022dad7bb5695d1e3d54d79
 </dict>
 </plist>

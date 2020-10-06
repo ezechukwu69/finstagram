@@ -3,9 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
+<<<<<<< HEAD
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
 	<string>Fluttergram</string>
+=======
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+>>>>>>> 4966e8f32fe15aac8022dad7bb5695d1e3d54d79
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,6 +17,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
+<<<<<<< HEAD
 	<string>firestore_test</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
@@ -40,14 +45,30 @@
 	<string>Used to allow the user to take a photo to upload as a post</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Used to allow the user to select a photo to upload as a post</string>
+=======
+	<string>insatagram</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+>>>>>>> 4966e8f32fe15aac8022dad7bb5695d1e3d54d79
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+<<<<<<< HEAD
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>
 	</array>
+=======
+>>>>>>> 4966e8f32fe15aac8022dad7bb5695d1e3d54d79
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -61,10 +82,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+<<<<<<< HEAD
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Your location required to post </string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location required to post</string>
+=======
+>>>>>>> 4966e8f32fe15aac8022dad7bb5695d1e3d54d79
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 </dict>

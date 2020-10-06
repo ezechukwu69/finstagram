@@ -45,14 +45,14 @@ class _ActivityFeedPageState extends State<ActivityFeedPage> with AutomaticKeepA
 
   getFeed() async {
     List<ActivityFeedItem> items = [];
-    var snap = await Firestore.instance
+    var snap = await FirebaseFirestore.instance
         .collection('insta_a_feed')
-        .document(currentUserModel.id)
+        .doc(currentUserModel.id)
         .collection("items")
         .orderBy("timestamp")
-        .getDocuments();
+        .get();
 
-    for (var doc in snap.documents) {
+    for (var doc in snap.docs) {
       items.add(ActivityFeedItem.fromDocument(doc));
     }
     return items;
@@ -67,8 +67,7 @@ class _ActivityFeedPageState extends State<ActivityFeedPage> with AutomaticKeepA
 class ActivityFeedItem extends StatelessWidget {
   final String username;
   final String userId;
-  final String
-      type; // types include liked photo, follow user, comment on photo
+  final String type; // types include liked photo, follow user, comment on photo
   final String mediaUrl;
   final String mediaId;
   final String userProfileImg;

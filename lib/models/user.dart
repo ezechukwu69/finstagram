@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class User {
+class UserModel {
   final String email;
   final String id;
   final String photoUrl;
@@ -10,7 +10,7 @@ class User {
   final Map followers;
   final Map following;
 
-  const User(
+  const UserModel(
       {this.username,
       this.id,
       this.photoUrl,
@@ -20,12 +20,12 @@ class User {
       this.followers,
       this.following});
 
-  factory User.fromDocument(DocumentSnapshot document) {
-    return User(
+  factory UserModel.fromDocument(DocumentSnapshot document) {
+    return UserModel(
       email: document['email'],
       username: document['username'],
       photoUrl: document['photoUrl'],
-      id: document.documentID,
+      id: document.id,
       displayName: document['displayName'],
       bio: document['bio'],
       followers: document['followers'],

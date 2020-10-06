@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Fluttergram
 A working Instagram clone written in Flutter using Firebase / Firestore
 
@@ -123,3 +124,7 @@ Double check install instructions for both
  - [ ] Direct Messaging
  - [ ] Stories
  - [ ] Clean up code
+=======
+# finstagram
+Clone of instagram with complete admin pannel
+>>>>>>> 4966e8f32fe15aac8022dad7bb5695d1e3d54d79

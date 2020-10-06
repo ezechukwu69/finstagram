@@ -28,10 +28,10 @@ class EditProfilePage extends StatelessWidget {
   }
 
   applyChanges() {
-    Firestore.instance
+    FirebaseFirestore.instance
         .collection('insta_users')
-        .document(currentUserModel.id)
-        .updateData({
+        .doc(currentUserModel.id)
+        .update({
       "displayName": nameController.text,
       "bio": bioController.text,
     });
@@ -61,9 +61,9 @@ class EditProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: Firestore.instance
+        future: FirebaseFirestore.instance
             .collection('insta_users')
-            .document(currentUserModel.id)
+            .doc(currentUserModel.id)
             .get(),
         builder: (context, snapshot) {
           if (!snapshot.hasData)
@@ -71,7 +71,7 @@ class EditProfilePage extends StatelessWidget {
                 alignment: FractionalOffset.center,
                 child: CircularProgressIndicator());
 
-          User user = User.fromDocument(snapshot.data);
+          UserModel user = UserModel.fromDocument(snapshot.data);
 
           nameController.text = user.displayName;
           bioController.text = user.bio;

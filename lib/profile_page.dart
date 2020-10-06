@@ -74,23 +74,23 @@ class _ProfilePage extends State<ProfilePage>
       followButtonClicked = true;
     });
 
-    Firestore.instance.document("insta_users/$profileId").updateData({
+    FirebaseFirestore.instance.doc("insta_users/$profileId").update({
       'followers.$currentUserId': true
       //firestore plugin doesnt support deleting, so it must be nulled / falsed
     });
 
-    Firestore.instance.document("insta_users/$currentUserId").updateData({
+    FirebaseFirestore.instance.doc("insta_users/$currentUserId").update({
       'following.$profileId': true
       //firestore plugin doesnt support deleting, so it must be nulled / falsed
     });
 
     //updates activity feed
-    Firestore.instance
+    FirebaseFirestore.instance
         .collection("insta_a_feed")
-        .document(profileId)
+        .doc(profileId)
         .collection("items")
-        .document(currentUserId)
-        .setData({
+        .doc(currentUserId)
+        .set({
       "ownerId": profileId,
       "username": currentUserModel.username,
       "userId": currentUserId,
@@ -106,21 +106,21 @@ class _ProfilePage extends State<ProfilePage>
       followButtonClicked = true;
     });
 
-    Firestore.instance.document("insta_users/$profileId").updateData({
+    FirebaseFirestore.instance.doc("insta_users/$profileId").update({
       'followers.$currentUserId': false
       //firestore plugin doesnt support deleting, so it must be nulled / falsed
     });
 
-    Firestore.instance.document("insta_users/$currentUserId").updateData({
+    FirebaseFirestore.instance.doc("insta_users/$currentUserId").update({
       'following.$profileId': false
       //firestore plugin doesnt support deleting, so it must be nulled / falsed
     });
 
-    Firestore.instance
+    FirebaseFirestore.instance
         .collection("insta_a_feed")
-        .document(profileId)
+        .doc(profileId)
         .collection("items")
-        .document(currentUserId)
+        .doc(currentUserId)
         .delete();
   }
 
@@ -169,13 +169,13 @@ class _ProfilePage extends State<ProfilePage>
               child: Text(text,
                   style: TextStyle(
                       color: textColor, fontWeight: FontWeight.bold)),
-              width: 250.0,
+              width: 200.0,
               height: 27.0,
             )),
       );
     }
 
-    Container buildProfileFollowButton(User user) {
+    Container buildProfileFollowButton(UserModel user) {
       // viewing your own profile - should show edit button
       if (currentUserId == profileId) {
         return buildFollowButton(
@@ -247,16 +247,16 @@ class _ProfilePage extends State<ProfilePage>
     Container buildUserPosts() {
       Future<List<ImagePost>> getPosts() async {
         List<ImagePost> posts = [];
-        var snap = await Firestore.instance
+        var snap = await FirebaseFirestore.instance
             .collection('insta_posts')
             .where('ownerId', isEqualTo: profileId)
             .orderBy("timestamp")
-            .getDocuments();
-        for (var doc in snap.documents) {
+            .get();
+        for (var doc in snap.docs) {
           posts.add(ImagePost.fromDocument(doc));
         }
         setState(() {
-          postCount = snap.documents.length;
+          postCount = snap.docs.length;
         });
 
         return posts.reversed.toList();
@@ -285,19 +285,22 @@ class _ProfilePage extends State<ProfilePage>
                   return GridTile(child: ImageTile(imagePost));
                 }).toList());
           } else if (view == "feed") {
-            return Column(
-                children: snapshot.data.map((ImagePost imagePost) {
-              return imagePost;
-            }).toList());
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Column(
+                  children: snapshot.data.map((ImagePost imagePost) {
+                return ImageTile(imagePost);
+              }).toList()),
+            );
           }
         },
       ));
     }
 
     return StreamBuilder(
-        stream: Firestore.instance
+        stream: FirebaseFirestore.instance
             .collection('insta_users')
-            .document(profileId)
+            .doc(profileId)
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData)
@@ -305,7 +308,7 @@ class _ProfilePage extends State<ProfilePage>
                 alignment: FractionalOffset.center,
                 child: CircularProgressIndicator());
 
-          User user = User.fromDocument(snapshot.data);
+          UserModel user = UserModel.fromDocument(snapshot.data);
 
           if (user.followers.containsKey(currentUserId) &&
               user.followers[currentUserId] &&
@@ -429,7 +432,8 @@ class ImageTile extends StatelessWidget {
             body: ListView(
               children: <Widget>[
                 Container(
-                  child: imagePost,
+                  height: MediaQuery.of(context).size.height - kToolbarHeight - 22.0,
+                  child: Image.network(imagePost.mediaUrl, fit: BoxFit.cover),
                 ),
               ],
             )),
@@ -440,7 +444,12 @@ class ImageTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () => clickedImage(context),
-        child: Image.network(imagePost.mediaUrl, fit: BoxFit.cover));
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Container(
+              height: MediaQuery.of(context).size.height - kToolbarHeight - kBottomNavigationBarHeight,
+              child: Image.network(imagePost.mediaUrl, fit: BoxFit.cover)),
+        ));
   }
 }
 
@@ -450,3 +459,46 @@ void openProfile(BuildContext context, String userId) {
     return ProfilePage(userId: userId);
   }));
 }
+
+
+// class FeedsTile extends StatelessWidget {
+//   final ImagePost imagePost;
+//
+//   FeedsTile(this.imagePost);
+//
+//   clickedImage(BuildContext context) {
+//     Navigator.of(context)
+//         .push(MaterialPageRoute<bool>(builder: (BuildContext context) {
+//       return Center(
+//         child: Scaffold(
+//             appBar: AppBar(
+//               title: Text('Photo',
+//                   style: TextStyle(
+//                       color: Colors.black, fontWeight: FontWeight.bold)),
+//               backgroundColor: Colors.white,
+//             ),
+//             body: ListView(
+//               children: <Widget>[
+//                 Container(
+//                   height: MediaQuery.of(context).size.height - kToolbarHeight,
+//                   child: Image.network(imagePost.mediaUrl, fit: BoxFit.cover),
+//                 ),
+//               ],
+//             )),
+//       );
+//     }));
+//   }
+//
+//   Widget build(BuildContext context) {
+//     return GestureDetector(
+//         onTap: () => clickedImage(context),
+//         child: Image.network(imagePost.mediaUrl, fit: BoxFit.cover));
+//   }
+// }
+//
+// void openProfile(BuildContext context, String userId) {
+//   Navigator.of(context)
+//       .push(MaterialPageRoute<bool>(builder: (BuildContext context) {
+//     return ProfilePage(userId: userId);
+//   }));
+// }

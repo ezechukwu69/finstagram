@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'feed.dart';
 import 'upload_page.dart';
 import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,42 +17,36 @@ import 'models/user.dart';
 
 final auth = FirebaseAuth.instance;
 final googleSignIn = GoogleSignIn();
-final ref = Firestore.instance.collection('insta_users');
+final ref = FirebaseFirestore.instance.collection('insta_users');
 final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+GoogleSignInAccount user = googleSignIn.currentUser;
 
-
-User currentUserModel;
+UserModel currentUserModel;
 
 Future<void> main() async {
-
-  WidgetsFlutterBinding.ensureInitialized(); // after upgrading flutter this is now necessary
-
-  // enable timestamps in firebase
-  Firestore.instance.settings().then((_) {
-    print('[Main] Firestore timestamps in snapshots set');},
-    onError: (_) => print('[Main] Error setting timestamps in snapshots')
-  );
+  WidgetsFlutterBinding
+      .ensureInitialized(); // after upgrading flutter this is now necessary
+  await Firebase.initializeApp();
+  FirebaseFirestore.instance.settings;
   runApp(Fluttergram());
 }
 
 Future<Null> _ensureLoggedIn(BuildContext context) async {
   GoogleSignInAccount user = googleSignIn.currentUser;
-  if (user == null) {
-    user = await googleSignIn.signInSilently();
-  }
+  // if (user == null) {
+  //   user = await googleSignIn.signInSilently();
+  // }
   if (user == null) {
     await googleSignIn.signIn();
     await tryCreateUserRecord(context);
   }
 
-  if (await auth.currentUser() == null) {
-
+  if (auth.currentUser == null) {
     final GoogleSignInAccount googleUser = await googleSignIn.signIn();
-    final GoogleSignInAuthentication googleAuth = await googleUser
-        .authentication;
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
 
-
-    final AuthCredential credential = GoogleAuthProvider.getCredential(
+    final AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
@@ -61,28 +56,27 @@ Future<Null> _ensureLoggedIn(BuildContext context) async {
 }
 
 Future<Null> _silentLogin(BuildContext context) async {
-  GoogleSignInAccount user = googleSignIn.currentUser;
+
 
   if (user == null) {
     user = await googleSignIn.signInSilently();
     await tryCreateUserRecord(context);
+    print(auth.currentUser.toString());
+    print(user.id);
   }
 
-  if (await auth.currentUser() == null && user != null) {
+  if (auth.currentUser == null && user != null) {
     final GoogleSignInAccount googleUser = await googleSignIn.signIn();
-    final GoogleSignInAuthentication googleAuth = await googleUser
-        .authentication;
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
 
-
-    final AuthCredential credential = GoogleAuthProvider.getCredential(
+    final AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
     await auth.signInWithCredential(credential);
   }
-
-
 }
 
 Future<Null> _setUpNotifications() async {
@@ -102,10 +96,10 @@ Future<Null> _setUpNotifications() async {
     _firebaseMessaging.getToken().then((token) {
       print("Firebase Messaging Token: " + token);
 
-      Firestore.instance
+      FirebaseFirestore.instance
           .collection("insta_users")
-          .document(currentUserModel.id)
-          .updateData({"androidNotificationToken": token});
+          .doc(currentUserModel.id)
+          .update({"androidNotificationToken": token});
     });
   }
 }
@@ -115,10 +109,10 @@ Future<void> tryCreateUserRecord(BuildContext context) async {
   if (user == null) {
     return null;
   }
-  DocumentSnapshot userRecord = await ref.document(user.id).get();
+  DocumentSnapshot userRecord = await ref.doc(user.id).get();
   if (userRecord.data == null) {
     // no user record exists, time to create
-
+  //
     String userName = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -143,7 +137,7 @@ Future<void> tryCreateUserRecord(BuildContext context) async {
     );
 
     if (userName != null || userName.length != 0) {
-      ref.document(user.id).setData({
+      await ref.doc(user.id).set({
         "id": user.id,
         "username": userName,
         "photoUrl": user.photoUrl,
@@ -154,10 +148,12 @@ Future<void> tryCreateUserRecord(BuildContext context) async {
         "following": {},
       });
     }
-    userRecord = await ref.document(user.id).get();
+    userRecord = await ref.doc(user.id).get();
   }
+  print(auth.currentUser.toString());
+  print(user.id.toString());
+  currentUserModel = await UserModel.fromDocument(userRecord);
 
-  currentUserModel = User.fromDocument(userRecord);
   return null;
 }
 
@@ -166,7 +162,7 @@ class Fluttergram extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Fluttergram',
+      title: 'Finstagram',
       theme: ThemeData(
           // This is the theme of your application.
           //
@@ -207,7 +203,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: <Widget>[
               Text(
-                'Fluttergram',
+                'Finstagram',
                 style: TextStyle(
                     fontSize: 60.0,
                     fontFamily: "Billabong",
@@ -216,11 +212,18 @@ class _HomePageState extends State<HomePage> {
               Padding(padding: const EdgeInsets.only(bottom: 100.0)),
               GestureDetector(
                 onTap: login,
-                child: Image.asset(
-                  "assets/images/google_signin_button.png",
-                  width: 225.0,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: Container(
+                    width: 250.0,
+                    child: Image.asset(
+                      "assets/images/google_signin_button.png",
+                      width: 225.0,
+                      // fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -237,7 +240,8 @@ class _HomePageState extends State<HomePage> {
     if (setupNotifications == false && currentUserModel != null) {
       setUpNotifications();
     }
-
+    print(googleSignIn.currentUser.toString());
+    print(currentUserModel.toString());
     return (googleSignIn.currentUser == null || currentUserModel == null)
         ? buildLoginPage()
         : Scaffold(
@@ -252,8 +256,7 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.white,
                   child: Uploader(),
                 ),
-                Container(
-                    color: Colors.white, child: ActivityFeedPage()),
+                Container(color: Colors.white, child: ActivityFeedPage()),
                 Container(
                     color: Colors.white,
                     child: ProfilePage(
@@ -270,27 +273,22 @@ class _HomePageState extends State<HomePage> {
                 BottomNavigationBarItem(
                     icon: Icon(Icons.home,
                         color: (_page == 0) ? Colors.black : Colors.grey),
-                    title: Container(height: 0.0),
                     backgroundColor: Colors.white),
                 BottomNavigationBarItem(
                     icon: Icon(Icons.search,
                         color: (_page == 1) ? Colors.black : Colors.grey),
-                    title: Container(height: 0.0),
                     backgroundColor: Colors.white),
                 BottomNavigationBarItem(
                     icon: Icon(Icons.add_circle,
                         color: (_page == 2) ? Colors.black : Colors.grey),
-                    title: Container(height: 0.0),
                     backgroundColor: Colors.white),
                 BottomNavigationBarItem(
                     icon: Icon(Icons.star,
                         color: (_page == 3) ? Colors.black : Colors.grey),
-                    title: Container(height: 0.0),
                     backgroundColor: Colors.white),
                 BottomNavigationBarItem(
                     icon: Icon(Icons.person,
                         color: (_page == 4) ? Colors.black : Colors.grey),
-                    title: Container(height: 0.0),
                     backgroundColor: Colors.white),
               ],
               onTap: navigationTapped,
