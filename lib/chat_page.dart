@@ -40,9 +40,7 @@ class _ChatPageState extends State<ChatPage> {
                 children: [
                   CircleAvatar(
                     backgroundColor: Colors.white24,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(40.0),
-                      child: Image.network(snapshot.data['photoUrl'],fit: BoxFit.contain,)),),
+                    backgroundImage: NetworkImage(snapshot.data['photoUrl']),),
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Text(

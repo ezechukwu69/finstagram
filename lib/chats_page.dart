@@ -72,10 +72,7 @@ class _ChatsPageState extends State<ChatsPage> {
                                       if (snapshot.hasData) {
                                         return CircleAvatar(
                                           backgroundColor: Colors.white,
-                                            child: ClipRRect(
-                                                borderRadius: BorderRadius.circular(40.0),
-                                                child: Image.network(
-                                                    snapshot.data['photoUrl'])));
+                                            backgroundImage: NetworkImage(snapshot.data['photoUrl']),);
                                       }
                                       return CircleAvatar(child: Container(),);
                                     }),

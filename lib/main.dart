@@ -1,6 +1,7 @@
 import 'package:Fluttergram/reels_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'feed.dart';
 import 'upload_page.dart';
 import 'dart:async';
@@ -156,6 +157,10 @@ class Fluttergram extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return MaterialApp(
       // key: UniqueKey(),
       title: 'Finstagram',

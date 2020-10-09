@@ -47,6 +47,7 @@ class _Feed extends State<Feed> with AutomaticKeepAliveClientMixin<Feed> {
                           .snapshots(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
+                        if (snapshot.data != null && snapshot.data.docs.length > 0) {
                           QueryDocumentSnapshot e = snapshot.data.docs.first;
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -73,8 +74,8 @@ class _Feed extends State<Feed> with AutomaticKeepAliveClientMixin<Feed> {
                                                 radius: 20.0,
                                                 child: ClipRRect(
                                                     borderRadius:
-                                                        BorderRadius.circular(
-                                                            40.0),
+                                                    BorderRadius.circular(
+                                                        40.0),
                                                     child: Image.network(
                                                       snapshot.data['photoUrl'],
                                                       fit: BoxFit.fill,
@@ -99,69 +100,69 @@ class _Feed extends State<Feed> with AutomaticKeepAliveClientMixin<Feed> {
                                   ),
                                   !e['mediaUrl'].contains('mp4')
                                       ? Container(
-                                          height:
-                                              MediaQuery.of(context).size.height /
-                                                  1.9,
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: Image.network(
-                                            e['mediaUrl'],
-                                            fit: BoxFit.cover,
-                                          ))
+                                      height:
+                                      MediaQuery.of(context).size.height /
+                                          1.9,
+                                      width:
+                                      MediaQuery.of(context).size.width,
+                                      child: Image.network(
+                                        e['mediaUrl'],
+                                        fit: BoxFit.cover,
+                                      ))
                                       : Container(
-                                          height:
-                                              MediaQuery.of(context).size.height /
-                                                  1.9,
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: Stack(
-                                            children: [
-                                              Video(url: e['mediaUrl']),
-                                              Positioned(
-                                                  bottom: 8.0,
-                                                  right: 8.0,
-                                                  child: Icon(Icons
-                                                      .movie_creation_outlined))
-                                            ],
-                                          ),
-                                        ),
+                                    height:
+                                    MediaQuery.of(context).size.height /
+                                        1.9,
+                                    width:
+                                    MediaQuery.of(context).size.width,
+                                    child: Stack(
+                                      children: [
+                                        Video(url: e['mediaUrl']),
+                                        Positioned(
+                                            bottom: 8.0,
+                                            right: 8.0,
+                                            child: Icon(Icons
+                                                .movie_creation_outlined))
+                                      ],
+                                    ),
+                                  ),
                                   Row(
                                     mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                     children: [
                                       Row(children: [
                                         FutureBuilder(
                                             future: FirebaseFirestore.instance
                                                 .doc(
-                                                    '/insta_posts/${e['postId']}')
+                                                '/insta_posts/${e['postId']}')
                                                 .get(),
                                             builder: (context, snapshot) {
                                               if (snapshot.hasData) {
                                                 return IconButton(
                                                     icon: snapshot.data['likes']
-                                                            .contains(
-                                                                "${googleSignIn.currentUser.id}")
+                                                        .contains(
+                                                        "${googleSignIn.currentUser.id}")
                                                         ? Icon(
-                                                            CupertinoIcons
-                                                                .heart_fill,
-                                                            color: Colors.red)
+                                                        CupertinoIcons
+                                                            .heart_fill,
+                                                        color: Colors.red)
                                                         : Icon(
-                                                            CupertinoIcons.heart,
-                                                            color: Colors.black),
+                                                        CupertinoIcons.heart,
+                                                        color: Colors.black),
                                                     onPressed: () async {
                                                       FirebaseFirestore.instance
                                                           .doc(
-                                                              '/insta_posts/${e['postId']}')
+                                                          '/insta_posts/${e['postId']}')
                                                           .get()
                                                           .then((value) async {
                                                         if (value
                                                             .data()['likes']
                                                             .contains(
-                                                                "${googleSignIn.currentUser.id}")) {
+                                                            "${googleSignIn.currentUser.id}")) {
                                                           await FirebaseFirestore
                                                               .instance
                                                               .doc(
-                                                                  '/insta_posts/${e['postId']}')
+                                                              '/insta_posts/${e['postId']}')
                                                               .update({
                                                             "likes": FieldValue
                                                                 .arrayRemove([
@@ -172,7 +173,7 @@ class _Feed extends State<Feed> with AutomaticKeepAliveClientMixin<Feed> {
                                                           await FirebaseFirestore
                                                               .instance
                                                               .doc(
-                                                                  '/insta_posts/${e['postId']}')
+                                                              '/insta_posts/${e['postId']}')
                                                               .update({
                                                             "likes": FieldValue
                                                                 .arrayUnion([
@@ -192,64 +193,64 @@ class _Feed extends State<Feed> with AutomaticKeepAliveClientMixin<Feed> {
                                             onPressed: e['ownerId'] == googleSignIn.currentUser.id
                                                 ? null
                                                 : () {
-                                                    FirebaseFirestore.instance
-                                                        .collection('insta_chats')
-                                                        .where('participants',
-                                                            arrayContains:
-                                                                e['ownerId'])
-                                                        .get()
-                                                        .then((value) {
-                                                      List<QueryDocumentSnapshot>
-                                                          dt = value.docs;
-                                                      if (dt.isEmpty) {
-                                                        DocumentReference dt =
-                                                            FirebaseFirestore
-                                                                .instance
-                                                                .collection(
-                                                                    'insta_chats')
-                                                                .doc();
-                                                        dt.set({
-                                                          'participants': [
-                                                            googleSignIn.currentUser.id,
-                                                            e['ownerId']
-                                                          ],
-                                                          'chats': []
-                                                        }).then((value) => Navigator
-                                                                .of(context)
-                                                            .push(
-                                                                MaterialPageRoute(
-                                                                    builder:
-                                                                        (context) =>
-                                                                            ChatPage(
-                                                                              ownerId:
-                                                                                  e['ownerId'],
-                                                                              chatId:
-                                                                                  dt.id,
-                                                                            ))));
-                                                      } else {
-                                                        dt.map((a) => a[
-                                                                'participants']
-                                                            .contains(
-                                                                e['ownerId']));
-                                                        FirebaseFirestore.instance
-                                                            .collection(
-                                                                'insta_chats')
-                                                            .doc('${dt.first.id}')
-                                                            .get()
-                                                            .then((value) => Navigator
-                                                                    .of(context)
-                                                                .push(
-                                                                    MaterialPageRoute(
-                                                                        builder: (context) =>
-                                                                            ChatPage(
-                                                                              ownerId:
-                                                                                  e['ownerId'],
-                                                                              chatId:
-                                                                                  value.id,
-                                                                            ))));
-                                                      }
-                                                    });
-                                                  })
+                                              FirebaseFirestore.instance
+                                                  .collection('insta_chats')
+                                                  .where('participants',
+                                                  arrayContains:
+                                                  e['ownerId'])
+                                                  .get()
+                                                  .then((value) {
+                                                List<QueryDocumentSnapshot>
+                                                dt = value.docs;
+                                                if (dt.isEmpty) {
+                                                  DocumentReference dt =
+                                                  FirebaseFirestore
+                                                      .instance
+                                                      .collection(
+                                                      'insta_chats')
+                                                      .doc();
+                                                  dt.set({
+                                                    'participants': [
+                                                      googleSignIn.currentUser.id,
+                                                      e['ownerId']
+                                                    ],
+                                                    'chats': []
+                                                  }).then((value) => Navigator
+                                                      .of(context)
+                                                      .push(
+                                                      MaterialPageRoute(
+                                                          builder:
+                                                              (context) =>
+                                                              ChatPage(
+                                                                ownerId:
+                                                                e['ownerId'],
+                                                                chatId:
+                                                                dt.id,
+                                                              ))));
+                                                } else {
+                                                  dt.map((a) => a[
+                                                  'participants']
+                                                      .contains(
+                                                      e['ownerId']));
+                                                  FirebaseFirestore.instance
+                                                      .collection(
+                                                      'insta_chats')
+                                                      .doc('${dt.first.id}')
+                                                      .get()
+                                                      .then((value) => Navigator
+                                                      .of(context)
+                                                      .push(
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              ChatPage(
+                                                                ownerId:
+                                                                e['ownerId'],
+                                                                chatId:
+                                                                value.id,
+                                                              ))));
+                                                }
+                                              });
+                                            })
                                       ]),
                                       StreamBuilder(
                                         stream: FirebaseFirestore.instance
@@ -261,23 +262,23 @@ class _Feed extends State<Feed> with AutomaticKeepAliveClientMixin<Feed> {
                                                 1) {
                                               return Padding(
                                                 padding:
-                                                    const EdgeInsets.all(8.0),
+                                                const EdgeInsets.all(8.0),
                                                 child: Text(
                                                     "${snapshot.data['likes'].length} like",
                                                     style: TextStyle(
                                                         fontWeight:
-                                                            FontWeight.bold,
+                                                        FontWeight.bold,
                                                         color: Colors.grey[800])),
                                               );
                                             } else {
                                               Padding(
                                                 padding:
-                                                    const EdgeInsets.all(8.0),
+                                                const EdgeInsets.all(8.0),
                                                 child: Text(
                                                     "${snapshot.data['likes'].length} likes",
                                                     style: TextStyle(
                                                         fontWeight:
-                                                            FontWeight.bold,
+                                                        FontWeight.bold,
                                                         color: Colors.grey[800])),
                                               );
                                             }
@@ -337,6 +338,8 @@ class _Feed extends State<Feed> with AutomaticKeepAliveClientMixin<Feed> {
                               ),
                             ),
                           );
+                        }
+
                         }
                         return Container();
                       },
