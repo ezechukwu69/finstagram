@@ -175,8 +175,8 @@ class _ImagePost extends State<ImagePost> {
           if (snapshot.data != null) {
             return ListTile(
               leading: CircleAvatar(
-                backgroundImage: CachedNetworkImageProvider(snapshot.data.data['mediaUrl']),
-                backgroundColor: Colors.grey,
+                backgroundColor: Colors.white,
+                backgroundImage: CachedNetworkImageProvider(snapshot.data.data['photoUrl']),
               ),
               title: GestureDetector(
                 child: Text(snapshot.data.data['username'], style: boldStyle),

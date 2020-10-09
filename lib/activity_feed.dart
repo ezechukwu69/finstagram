@@ -141,7 +141,8 @@ class ActivityFeedItem extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 20.0, right: 15.0),
           child: CircleAvatar(
-            radius: 23.0,
+            backgroundColor: Colors.white,
+            radius: 25.0,
             backgroundImage: NetworkImage(userProfileImg),
           ),
         ),
@@ -182,7 +183,6 @@ class ActivityFeedItem extends StatelessWidget {
 }
 
 openImage(BuildContext context, String imageId) {
-  print("the image id is $imageId");
   Navigator.of(context)
       .push(MaterialPageRoute<bool>(builder: (BuildContext context) {
     return Center(

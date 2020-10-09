@@ -10,13 +10,13 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Video extends StatefulWidget {
+class VideoStatic extends StatefulWidget {
   final String url;
-  Video({this.url});
-  _Video createState() => _Video();
+  VideoStatic({this.url});
+  _VideoStatic createState() => _VideoStatic();
 }
 
-class _Video extends State<Video> with AutomaticKeepAliveClientMixin<Video> {
+class _VideoStatic extends State<VideoStatic> with AutomaticKeepAliveClientMixin<VideoStatic> {
   VideoPlayerController _controller;
   int count = 0;
   @override
@@ -28,18 +28,14 @@ class _Video extends State<Video> with AutomaticKeepAliveClientMixin<Video> {
     super.initState();
   }
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-        onTap: () {
-          setState(() {
-            if (count % 2 == 0) {
-              _controller.play();
-            } else {
-              _controller.pause();
-            }
-          });
-        },
-        child: VideoPlayer(_controller));
+    return VideoPlayer(_controller);
   }
 
   @override

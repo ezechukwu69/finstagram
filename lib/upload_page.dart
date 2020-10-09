@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -9,12 +10,14 @@ import 'dart:io';
 import 'location.dart';
 import 'package:geocoder/geocoder.dart';
 
+File file;
+
 class Uploader extends StatefulWidget {
+  @override
   _Uploader createState() => _Uploader();
 }
 
 class _Uploader extends State<Uploader> {
-  File file;
   //Strings required to save address
   Address address;
 
@@ -45,7 +48,9 @@ class _Uploader extends State<Uploader> {
     return file == null
         ? IconButton(
             icon: Icon(Icons.file_upload),
-            onPressed: () => {_selectImage(context)})
+            onPressed: () {
+              _selectImage(context);
+            })
         : Scaffold(
             resizeToAvoidBottomPadding: false,
             appBar: AppBar(
@@ -143,8 +148,11 @@ class _Uploader extends State<Uploader> {
                 child: const Text('Take a photo'),
                 onPressed: () async {
                   Navigator.pop(context);
-                  var imageFile =
-                      await ImagePicker().getImage(source: ImageSource.camera, maxWidth: 1920, maxHeight: 1200, imageQuality: 80);
+                  var imageFile = await ImagePicker().getImage(
+                      source: ImageSource.camera,
+                      maxWidth: 1920,
+                      maxHeight: 1200,
+                      imageQuality: 80);
                   setState(() {
                     file = File.fromUri(Uri.parse(imageFile.path));
                   });
@@ -153,10 +161,22 @@ class _Uploader extends State<Uploader> {
                 child: const Text('Choose from Gallery'),
                 onPressed: () async {
                   Navigator.of(context).pop();
-                  var imageFile =
-                      await ImagePicker().getImage(source: ImageSource.gallery, maxWidth: 1920, maxHeight: 1200, imageQuality: 80);
+                  var imageFile = await ImagePicker().getImage(
+                      source: ImageSource.gallery,
+                      maxWidth: 1920,
+                      maxHeight: 1200,
+                      imageQuality: 80);
                   setState(() {
                     file = File.fromUri(Uri.parse(imageFile.path));
+                  });
+                }),
+            SimpleDialogOption(
+                child: const Text('Choose from File'),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  var imageFile = await FilePicker.platform.pickFiles();
+                  setState(() {
+                    file = File.fromUri(Uri.parse(imageFile.files.single.path));
                   });
                 }),
             SimpleDialogOption(
@@ -216,9 +236,22 @@ class PostForm extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
-            CircleAvatar(
-              backgroundImage: NetworkImage(currentUserModel.photoUrl),
-            ),
+            StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .doc('/insta_users/${googleSignIn.currentUser.id}')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return CircleAvatar(
+                      backgroundColor: Colors.white,
+                      backgroundImage: NetworkImage(snapshot.data['photoUrl']),
+                    );
+                  }
+                  return CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: Container(),
+                  );
+                }),
             Container(
               width: 250.0,
               child: TextField(
@@ -232,14 +265,16 @@ class PostForm extends StatelessWidget {
               width: 45.0,
               child: AspectRatio(
                 aspectRatio: 487 / 451,
-                child: Container(
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                    fit: BoxFit.fill,
-                    alignment: FractionalOffset.topCenter,
-                    image: FileImage(imageFile),
-                  )),
-                ),
+                child: !file.path.contains("mp4")
+                    ? Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                          fit: BoxFit.fill,
+                          alignment: FractionalOffset.topCenter,
+                          image: FileImage(imageFile),
+                        )),
+                      )
+                    : Container(),
               ),
             ),
           ],
@@ -252,7 +287,7 @@ class PostForm extends StatelessWidget {
             child: TextField(
               controller: locationController,
               decoration: InputDecoration(
-                  hintText: "Where was this photo taken?",
+                  hintText: "Where was this photo/video taken?",
                   border: InputBorder.none),
             ),
           ),
@@ -262,9 +297,10 @@ class PostForm extends StatelessWidget {
   }
 }
 
-Future<String> uploadImage(var imageFile) async {
+Future<String> uploadImage(File imageFile) async {
   var uuid = Uuid().v1();
-  StorageReference ref = FirebaseStorage.instance.ref().child("post_$uuid.jpg");
+  StorageReference ref =
+      FirebaseStorage.instance.ref().child("post_$uuid.${imageFile.path}");
   StorageUploadTask uploadTask = ref.putFile(imageFile);
 
   String downloadUrl = await (await uploadTask.onComplete).ref.getDownloadURL();

@@ -1,3 +1,4 @@
+import 'package:Fluttergram/profile_upload_page.dart';
 import "package:flutter/material.dart";
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'main.dart'; //for currentuser & google signin instance
@@ -6,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfilePage extends StatelessWidget {
   final TextEditingController nameController = TextEditingController();
+
   final TextEditingController bioController = TextEditingController();
 
   changeProfilePhoto(BuildContext parentContext) {
@@ -30,7 +32,7 @@ class EditProfilePage extends StatelessWidget {
   applyChanges() {
     FirebaseFirestore.instance
         .collection('insta_users')
-        .doc(currentUserModel.id)
+        .doc(googleSignIn.currentUser.id)
         .update({
       "displayName": nameController.text,
       "bio": bioController.text,
@@ -81,13 +83,28 @@ class EditProfilePage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
                 child: CircleAvatar(
-                  backgroundImage: NetworkImage(currentUserModel.photoUrl),
-                  radius: 50.0,
-                ),
+                    backgroundColor: Colors.white,
+                    radius: 70.0,
+                      backgroundImage: NetworkImage(snapshot.data['photoUrl']),
+                    // StreamBuilder(
+                    //   stream: FirebaseFirestore.instance
+                    //       .doc('/insta_users/${googleSignIn.currentUser.id}')
+                    //       .snapshots(),
+                    //   builder: (context, snapshot) {
+                    //     if (snapshot.hasData) {
+                    //       return ClipRRect(: Image.network(snapshot.data['photoUrl'],fit: BoxFit.fill,),borderRadius: BorderRadius.circular(40.0),);
+                    //     }
+                    //     return Container();
+                    //   },
+                    // )),
+                )
               ),
               FlatButton(
                   onPressed: () {
-                    changeProfilePhoto(context);
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => ProfileUploader(),
+                    ));
+                    // changeProfilePhoto(context);
                   },
                   child: Text(
                     "Change Photo",
@@ -106,26 +123,23 @@ class EditProfilePage extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: MaterialButton(
-                    onPressed: () => {_logout(context)},
-                    child: Text("Logout")
-
-                )
-              )
+                  padding: const EdgeInsets.all(16.0),
+                  child: MaterialButton(
+                      onPressed: () async {
+                        await _logout(context);
+                      },
+                      child: Text("Logout")))
             ],
           );
         });
   }
 
   void _logout(BuildContext context) async {
-    print("logout");
-    await auth.signOut();
-    await googleSignIn.signOut();
-
+    // await auth.signOut();
+    // await googleSignIn.signOut();
+    await googleSignIn.disconnect();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-
     currentUserModel = null;
 
     Navigator.pop(context);

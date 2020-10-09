@@ -1,3 +1,4 @@
+import 'package:Fluttergram/reels_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'feed.dart';
@@ -9,7 +10,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'profile_page.dart';
 import 'search_page.dart';
-import 'activity_feed.dart';
 import 'create_account.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:io' show Platform;
@@ -19,7 +19,6 @@ final auth = FirebaseAuth.instance;
 final googleSignIn = GoogleSignIn();
 final ref = FirebaseFirestore.instance.collection('insta_users');
 final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-GoogleSignInAccount user = googleSignIn.currentUser;
 
 UserModel currentUserModel;
 
@@ -33,9 +32,7 @@ Future<void> main() async {
 
 Future<Null> _ensureLoggedIn(BuildContext context) async {
   GoogleSignInAccount user = googleSignIn.currentUser;
-  // if (user == null) {
-  //   user = await googleSignIn.signInSilently();
-  // }
+
   if (user == null) {
     await googleSignIn.signIn();
     await tryCreateUserRecord(context);
@@ -52,20 +49,20 @@ Future<Null> _ensureLoggedIn(BuildContext context) async {
     );
 
     await auth.signInWithCredential(credential);
+    user = googleUser;
   }
 }
 
 Future<Null> _silentLogin(BuildContext context) async {
 
 
-  if (user == null) {
-    user = await googleSignIn.signInSilently();
+  if (googleSignIn.currentUser == null) {
+    await googleSignIn.signInSilently();
     await tryCreateUserRecord(context);
-    print(auth.currentUser.toString());
-    print(user.id);
   }
 
-  if (auth.currentUser == null && user != null) {
+  if (auth.currentUser == null && googleSignIn.currentUser != null) {
+    googleSignIn.currentUser.clearAuthCache();
     final GoogleSignInAccount googleUser = await googleSignIn.signIn();
     final GoogleSignInAuthentication googleAuth =
         await googleUser.authentication;
@@ -110,9 +107,8 @@ Future<void> tryCreateUserRecord(BuildContext context) async {
     return null;
   }
   DocumentSnapshot userRecord = await ref.doc(user.id).get();
-  if (userRecord.data == null) {
-    // no user record exists, time to create
-  //
+  if (!userRecord.exists) {
+
     String userName = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -146,15 +142,14 @@ Future<void> tryCreateUserRecord(BuildContext context) async {
         "bio": "",
         "followers": {},
         "following": {},
+        "admin": false
       });
     }
     userRecord = await ref.doc(user.id).get();
+    currentUserModel = await UserModel.fromDocument(userRecord);
   }
-  print(auth.currentUser.toString());
-  print(user.id.toString());
   currentUserModel = await UserModel.fromDocument(userRecord);
 
-  return null;
 }
 
 class Fluttergram extends StatelessWidget {
@@ -162,20 +157,14 @@ class Fluttergram extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      // key: UniqueKey(),
       title: 'Finstagram',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // Try running your application with "flutter run". You'll see the
-          // application has a blue toolbar. Then, without quitting the app, try
-          // changing the primarySwatch below to Colors.green and then invoke
-          // "hot reload" (press "r" in the console where you ran "flutter run",
-          // or press Run > Flutter Hot Reload in IntelliJ). Notice that the
-          // counter didn't reset back to zero; the application is not restarted.
           primarySwatch: Colors.blue,
           buttonColor: Colors.pink,
           primaryIconTheme: IconThemeData(color: Colors.black)),
-      home: HomePage(title: 'Fluttergram'),
+      home: HomePage(title: 'Finstagram'),
     );
   }
 }
@@ -240,8 +229,7 @@ class _HomePageState extends State<HomePage> {
     if (setupNotifications == false && currentUserModel != null) {
       setUpNotifications();
     }
-    print(googleSignIn.currentUser.toString());
-    print(currentUserModel.toString());
+
     return (googleSignIn.currentUser == null || currentUserModel == null)
         ? buildLoginPage()
         : Scaffold(
@@ -256,7 +244,8 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.white,
                   child: Uploader(),
                 ),
-                Container(color: Colors.white, child: ActivityFeedPage()),
+                // Container(color: Colors.white, child: ActivityFeedPage()),
+                Container(color: Colors.white, child: ReelsPage()),
                 Container(
                     color: Colors.white,
                     child: ProfilePage(
@@ -283,7 +272,7 @@ class _HomePageState extends State<HomePage> {
                         color: (_page == 2) ? Colors.black : Colors.grey),
                     backgroundColor: Colors.white),
                 BottomNavigationBarItem(
-                    icon: Icon(Icons.star,
+                    icon: Icon(Icons.movie,
                         color: (_page == 3) ? Colors.black : Colors.grey),
                     backgroundColor: Colors.white),
                 BottomNavigationBarItem(

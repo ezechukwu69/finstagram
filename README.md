@@ -1,11 +1,6 @@
-<<<<<<< HEAD
-# Fluttergram
+
+# Finstagram
 A working Instagram clone written in Flutter using Firebase / Firestore
-
-# Demo
-[Download the release APK to try out Fluttergram](https://github.com/mdanics/fluttergram/raw/master/app-release.apk) 
-
-I update Fluttergram with new features and bugs fixes, but the apk may be behind master. Take a look at the [changelog](/CHANGELOG.md) to see the most recent additions to the apk.
 
 ## Features
 
@@ -124,7 +119,6 @@ Double check install instructions for both
  - [ ] Direct Messaging
  - [ ] Stories
  - [ ] Clean up code
-=======
-# finstagram
+
+ # finstagram
 Clone of instagram with complete admin pannel
->>>>>>> 4966e8f32fe15aac8022dad7bb5695d1e3d54d79

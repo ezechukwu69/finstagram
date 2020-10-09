@@ -1,5 +1,9 @@
+import 'package:Fluttergram/video.dart';
+import 'package:Fluttergram/video_static.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:video_player/video_player.dart';
 import 'main.dart';
 import 'image_post.dart';
 import 'dart:async';
@@ -7,7 +11,7 @@ import 'edit_profile_page.dart';
 import 'models/user.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({this.userId});
+  const ProfilePage({Key key,this.userId}):super(key: key);
 
   final String userId;
 
@@ -26,6 +30,7 @@ class _ProfilePage extends State<ProfilePage>
   int followingCount = 0;
   _ProfilePage(this.profileId);
 
+
   editProfile() {
     EditProfilePage editPage = EditProfilePage();
 
@@ -33,6 +38,7 @@ class _ProfilePage extends State<ProfilePage>
         .push(MaterialPageRoute<bool>(builder: (BuildContext context) {
       return Center(
         child: Scaffold(
+          key: UniqueKey(),
             appBar: AppBar(
               leading: IconButton(
                 icon: Icon(Icons.close),
@@ -53,6 +59,7 @@ class _ProfilePage extends State<ProfilePage>
                     onPressed: () {
                       editPage.applyChanges();
                       Navigator.maybePop(context);
+                      setState(() {});
                     })
               ],
             ),
@@ -273,6 +280,7 @@ class _ProfilePage extends State<ProfilePage>
                 child: CircularProgressIndicator());
           else if (view == "grid") {
             // build the grid
+
             return GridView.count(
                 crossAxisCount: 3,
                 childAspectRatio: 1.0,
@@ -282,14 +290,19 @@ class _ProfilePage extends State<ProfilePage>
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 children: snapshot.data.map((ImagePost imagePost) {
-                  return GridTile(child: ImageTile(imagePost));
+                  return imagePost.mediaUrl.contains("mp4") ? GridTile(child: VideoTile(imagePost)) : GridTile(child: ImageTile(imagePost));
                 }).toList());
           } else if (view == "feed") {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Column(
                   children: snapshot.data.map((ImagePost imagePost) {
-                return ImageTile(imagePost);
+                return imagePost.mediaUrl.contains("mp4") ? Container(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    width: MediaQuery.of(context).size.width,
+                    child: VideoTile(imagePost)) : Container(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: ImageTile(imagePost));
               }).toList()),
             );
           }
@@ -333,10 +346,10 @@ class _ProfilePage extends State<ProfilePage>
                         Row(
                           children: <Widget>[
                             CircleAvatar(
-                              radius: 40.0,
-                              backgroundColor: Colors.grey,
-                              backgroundImage: NetworkImage(user.photoUrl),
-                            ),
+                            radius: 40.0,
+                            backgroundColor: Colors.grey,
+                            backgroundImage: NetworkImage(user.photoUrl),
+                              ),
                             Expanded(
                               flex: 1,
                               child: Column(
@@ -376,6 +389,10 @@ class _ProfilePage extends State<ProfilePage>
                           padding: const EdgeInsets.only(top: 1.0),
                           child: Text(user.bio),
                         ),
+                        snapshot.data['admin'] != null ? Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(child: Text('Admin',style: GoogleFonts.amarante().copyWith(color: Colors.red[300],fontSize: 17.0),)),
+                        ) : Container()
                       ],
                     ),
                   ),
@@ -453,6 +470,51 @@ class ImageTile extends StatelessWidget {
   }
 }
 
+
+class VideoTile extends StatelessWidget {
+  final ImagePost imagePost;
+
+  VideoTile(this.imagePost);
+
+  clickedImage(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute<bool>(builder: (BuildContext context) {
+      return Center(
+        child: Scaffold(
+            appBar: AppBar(
+              title: Text('Video',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
+              backgroundColor: Colors.white,
+            ),
+            body: ListView(
+              children: <Widget>[
+                Container(
+                  height: MediaQuery.of(context).size.height - kToolbarHeight - 22.0,
+                  child: Video(url: imagePost.mediaUrl),
+                ),
+              ],
+            )),
+      );
+    }));
+  }
+
+  Widget build(BuildContext context) {
+    return GestureDetector(
+        onTap: () => clickedImage(context),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Container(
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: Stack(children: [
+                VideoStatic(url: imagePost.mediaUrl,),
+                Positioned(child: Icon(Icons.movie_creation_outlined,size: 30,),right: 12.0,bottom: 12.0,)
+              ])),
+        ));
+  }
+}
+
+
 void openProfile(BuildContext context, String userId) {
   Navigator.of(context)
       .push(MaterialPageRoute<bool>(builder: (BuildContext context) {
@@ -460,45 +522,3 @@ void openProfile(BuildContext context, String userId) {
   }));
 }
 
-
-// class FeedsTile extends StatelessWidget {
-//   final ImagePost imagePost;
-//
-//   FeedsTile(this.imagePost);
-//
-//   clickedImage(BuildContext context) {
-//     Navigator.of(context)
-//         .push(MaterialPageRoute<bool>(builder: (BuildContext context) {
-//       return Center(
-//         child: Scaffold(
-//             appBar: AppBar(
-//               title: Text('Photo',
-//                   style: TextStyle(
-//                       color: Colors.black, fontWeight: FontWeight.bold)),
-//               backgroundColor: Colors.white,
-//             ),
-//             body: ListView(
-//               children: <Widget>[
-//                 Container(
-//                   height: MediaQuery.of(context).size.height - kToolbarHeight,
-//                   child: Image.network(imagePost.mediaUrl, fit: BoxFit.cover),
-//                 ),
-//               ],
-//             )),
-//       );
-//     }));
-//   }
-//
-//   Widget build(BuildContext context) {
-//     return GestureDetector(
-//         onTap: () => clickedImage(context),
-//         child: Image.network(imagePost.mediaUrl, fit: BoxFit.cover));
-//   }
-// }
-//
-// void openProfile(BuildContext context, String userId) {
-//   Navigator.of(context)
-//       .push(MaterialPageRoute<bool>(builder: (BuildContext context) {
-//     return ProfilePage(userId: userId);
-//   }));
-// }

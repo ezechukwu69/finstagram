@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
+import 'main.dart';
 import "profile_page.dart"; // needed to import for openProfile function
 import 'models/user.dart';
 
@@ -8,7 +9,8 @@ class SearchPage extends StatefulWidget {
   _SearchPage createState() => _SearchPage();
 }
 
-class _SearchPage extends State<SearchPage> with AutomaticKeepAliveClientMixin<SearchPage>{
+class _SearchPage extends State<SearchPage>
+    with AutomaticKeepAliveClientMixin<SearchPage> {
   Future<QuerySnapshot> userDocs;
 
   buildSearchField() {
@@ -40,7 +42,7 @@ class _SearchPage extends State<SearchPage> with AutomaticKeepAliveClientMixin<S
   void submit(String searchValue) async {
     Future<QuerySnapshot> users = FirebaseFirestore.instance
         .collection("insta_users")
-        .where('displayName', isGreaterThanOrEqualTo: searchValue)
+        .where('username', isGreaterThanOrEqualTo: searchValue)
         .get();
 
     setState(() {
@@ -88,10 +90,22 @@ class UserSearchItem extends StatelessWidget {
 
     return GestureDetector(
         child: ListTile(
-          leading: CircleAvatar(
-            backgroundImage: NetworkImage(user.photoUrl),
-            backgroundColor: Colors.grey,
-          ),
+          leading: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .doc('/insta_users/${user.id}')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return CircleAvatar(
+                    backgroundColor: Colors.white,
+                    backgroundImage: NetworkImage(snapshot.data['photoUrl']),
+                  );
+                }
+                return CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Container(),
+                );
+              }),
           title: Text(user.username, style: boldStyle),
           subtitle: Text(user.displayName),
         ),
