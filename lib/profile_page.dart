@@ -389,7 +389,7 @@ class _ProfilePage extends State<ProfilePage>
                           padding: const EdgeInsets.only(top: 1.0),
                           child: Text(user.bio),
                         ),
-                        snapshot.data['admin'] != null ? Padding(
+                        snapshot.data['admin'] != false ? Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Center(child: Text('Admin',style: GoogleFonts.amarante().copyWith(color: Colors.red[300],fontSize: 17.0),)),
                         ) : Container()
